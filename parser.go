@@ -63,17 +63,16 @@ func parseHttpRequest(r io.Reader) (*HttpRequest, error) {
 		headers[fieldKey] = fieldValue
 	}
 	httpRequest.Headers = headers
-
-	var cl int
-	contentLength := getHeaderByKey(headers, "Content-Length")
-	cl, err = strconv.Atoi(contentLength)
-	if err != nil {
-		return nil,
-			errors.New(fmt.Sprintf("Invalid content length: %s", contentLength))
-	}
-
 	body := []byte{}
-	if cl > 0 {
+
+	contentLength := getHeaderByKey(headers, "Content-Length")
+	if contentLength != "" {
+		_, err = strconv.Atoi(contentLength)
+		if err != nil {
+			return nil,
+				errors.New(fmt.Sprintf("Invalid content length: %s", contentLength))
+		}
+
 		var b byte
 		for true {
 			b, err = scanner.ReadByte()
@@ -87,6 +86,7 @@ func parseHttpRequest(r io.Reader) (*HttpRequest, error) {
 			body = append(body, b)
 		}
 	}
+
 	httpRequest.Body = body
 
 	return httpRequest, nil
