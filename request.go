@@ -16,7 +16,7 @@ type HttpRequest struct {
 	Method        string
 	Url           string
 	Proto         string
-	Headers       map[string]string
+	Header        Header
 	ContentLength int
 	Host          string
 	RemoteAddr    string
