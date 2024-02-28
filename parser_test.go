@@ -20,7 +20,7 @@ func TestParseHttpRequest(t *testing.T) {
 				Method: "GET",
 				Url:    "/path/to/resource",
 				Proto:  "HTTP/1.1",
-				Headers: map[string]string{
+				Header: map[string]string{
 					"Host":           "example.com",
 					"Content-Length": "0",
 				},
@@ -34,7 +34,7 @@ func TestParseHttpRequest(t *testing.T) {
 				Method: "POST",
 				Url:    "/api/data",
 				Proto:  "HTTP/1.0",
-				Headers: map[string]string{
+				Header: map[string]string{
 					"Content-Type":   "application/json",
 					"Content-Length": "18",
 				},
@@ -83,6 +83,78 @@ func TestParseHttpRequest(t *testing.T) {
 
 		if err == nil || err.Error() != tc.expectedError {
 			t.Errorf("%s: Expected error %q, got %v", tc.name, tc.expectedError, err)
+		}
+	}
+}
+
+func TestParseResponseToBytes(t *testing.T) {
+	// Successful parsing test cases
+	testCases := []struct {
+		name     string
+		input    *HttpResponse
+		expected []byte
+	}{
+		{
+			name:     "Nil response",
+			input:    nil,
+			expected: nil,
+		},
+		{
+			name: "Nil header",
+			input: &HttpResponse{
+				Proto:      DefaultProto,
+				StatusCode: StatusOk,
+				Status:     statusText(StatusOk),
+			},
+			expected: []byte("HTTP/1.1 200 OK\r\n"),
+		},
+		{
+			name: "Nil body",
+			input: &HttpResponse{
+				Proto:      DefaultProto,
+				StatusCode: StatusOk,
+				Status:     statusText(StatusOk),
+				Header: map[string]string{
+					"Content-Type": "text/plain",
+				},
+			},
+			expected: []byte("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\n"),
+		},
+		{
+			name: "Empty body",
+			input: &HttpResponse{
+				Proto:      DefaultProto,
+				StatusCode: StatusOk,
+				Status:     statusText(StatusOk),
+				Header: map[string]string{
+					"Content-Type":   "text/plain",
+					"Content-Length": "0",
+				},
+				Body: []byte{},
+			},
+			expected: []byte("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 0\r\n"),
+		},
+		{
+			name: "Valid response",
+			input: &HttpResponse{
+				Proto:      DefaultProto,
+				StatusCode: StatusOk,
+				Status:     statusText(StatusOk),
+				Header: map[string]string{
+					"Content-Type":   "text/plain",
+					"Content-Length": "13",
+				},
+				Body: []byte("Hello, World!"),
+			},
+			expected: []byte("HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 13\r\n\r\nHello, World!"),
+		},
+		// Add more test cases for different scenarios
+	}
+
+	for _, tc := range testCases {
+		actual := parseResponseToBytes(tc.input)
+		if !reflect.DeepEqual(actual, tc.expected) {
+			t.Errorf("%s: Parsed response mismatch:\nGot: %#v\nExpected: %#v", tc.name, string(actual), string(tc.expected))
 		}
 	}
 }
