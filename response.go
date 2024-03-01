@@ -3,6 +3,7 @@ package cowww
 import (
 	"errors"
 	"net"
+	"strconv"
 )
 
 var (
@@ -30,14 +31,13 @@ type ResponseWriter interface {
 }
 
 type HttpResponse struct {
-	Status           string
-	StatusCode       int
-	Proto            string
-	Header           Header
-	Body             []byte
-	ContentLength    int
-	TransferEncoding []string
-	Request          *HttpRequest
+	Status        string
+	StatusCode    int
+	Proto         string
+	Header        Header
+	Body          []byte
+	ContentLength int
+	Request       *HttpRequest
 }
 
 func statusText(status int) string {
@@ -63,6 +63,7 @@ func statusText(status int) string {
 
 type response struct {
 	c             net.Conn
+	req           *HttpRequest
 	statusCode    int
 	status        string
 	handlerHeader Header
@@ -73,10 +74,34 @@ func (r *response) Header() Header {
 }
 
 func (r *response) Write(b []byte) (int, error) {
+	if r.statusCode == 0 {
+		r.WriteHeader(StatusOk)
+	}
+
+	res := &HttpResponse{
+		Status:        r.status,
+		StatusCode:    r.statusCode,
+		Proto:         DefaultProto,
+		Header:        r.handlerHeader,
+		Body:          b,
+		ContentLength: len(b),
+		Request:       r.req,
+	}
+
+	if res.ContentLength > 0 {
+		res.Header["Content-Length"] = strconv.Itoa(res.ContentLength)
+	}
+
+	b = parseResponseToBytes(res)
+
 	return r.c.Write(b)
 }
 
 func (r *response) WriteHeader(statusCode int) {
+	if r.handlerHeader == nil {
+		r.handlerHeader = Header{}
+	}
+
 	r.statusCode = statusCode
 	r.status = statusText(statusCode)
 }
