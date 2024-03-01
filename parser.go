@@ -106,11 +106,11 @@ func parseResponseToBytes(r *HttpResponse) []byte {
 	if r == nil {
 		return nil
 	}
+
 	buffer := bytes.NewBuffer([]byte{})
 
 	// write status line
-	buffer.WriteString(r.Proto)
-	buffer.WriteString(fmt.Sprintf(" %d %s%s", r.StatusCode, r.Status, carriageReturn))
+	buffer.WriteString(fmt.Sprintf("%s %d %s%s", r.Proto, r.StatusCode, r.Status, carriageReturn))
 
 	if r.Header == nil {
 		return buffer.Bytes()
