@@ -40,27 +40,6 @@ type HttpResponse struct {
 	Request       *HttpRequest
 }
 
-func statusText(status int) string {
-	switch status {
-	case StatusOk:
-		return "OK"
-	case StatusCreated:
-		return "Created"
-	case StatusBadRequest:
-		return "Bad Request"
-	case StatusNotFound:
-		return "Not Found"
-	case StatusForbidden:
-		return "Forbidden"
-	case StatusInternalServerError:
-		return "Internal Server Error"
-	case StatusNotImplemented:
-		return "Not Implemented"
-	default:
-		return ""
-	}
-}
-
 type response struct {
 	c             net.Conn
 	req           *HttpRequest
@@ -104,4 +83,25 @@ func (r *response) WriteHeader(statusCode int) {
 
 	r.statusCode = statusCode
 	r.status = statusText(statusCode)
+}
+
+func statusText(status int) string {
+	switch status {
+	case StatusOk:
+		return "OK"
+	case StatusCreated:
+		return "Created"
+	case StatusBadRequest:
+		return "Bad Request"
+	case StatusNotFound:
+		return "Not Found"
+	case StatusForbidden:
+		return "Forbidden"
+	case StatusInternalServerError:
+		return "Internal Server Error"
+	case StatusNotImplemented:
+		return "Not Implemented"
+	default:
+		return ""
+	}
 }

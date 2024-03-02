@@ -36,8 +36,8 @@ func TestResponseWrite(t *testing.T) {
 
 	expected := "HTTP/1.1 200 OK\r\nContent-Type: text/plain\r\nContent-Length: 4\r\n\r\ntest"
 
-	if string(conn.WrittenBuf()) != expected {
-		t.Errorf("\nExpected: '%s'\nGot: '%s'", expected, string(conn.WrittenBuf()))
+	if string(conn.WriteBuf) != expected {
+		t.Errorf("\nExpected: '%s'\nGot: '%s'", expected, string(conn.WriteBuf))
 	}
 }
 
